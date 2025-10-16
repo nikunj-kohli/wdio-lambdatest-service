@@ -90,7 +90,7 @@
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.0",
     "tempy": "^0.3.0",
-    "typescript": "^5.9.3",
+    "typescript": "^3.6.3",
     "vitest": "^0.34.4"
   },
   "husky": {
