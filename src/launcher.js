@@ -6,6 +6,7 @@ import { performance, PerformanceObserver } from 'perf_hooks'
 import logger from '@wdio/logger'
 import LambdaTestTunnelLauncher from '@lambdatest/node-tunnel'
 import { TUNNEL_START_FAILED, TUNNEL_STOP_FAILED, TUNNEL_STOP_TIMEOUT } from './constants.js'
+import { updateBuildStatusForSession } from './util.js'
 const log = logger('@wdio/lambdatest-service')
 const colors = require('colors');
 export default class LambdaTestLauncher {
@@ -150,7 +151,21 @@ export default class LambdaTestLauncher {
         )
     }
 
-    onComplete() {
+    async onComplete(exitCode, config) {
+        try {
+            const updateBuildStatus = this.options?.updateBuildStatusOnRetry === true;
+            if (updateBuildStatus && exitCode === 0 && config?.product === 'appAutomation' && config?.sessionId) {
+                const lambdaCredentials = {
+                    username: config.user,
+                    accessKey: config.key,
+                    isApp: config?.product === 'appAutomation' ? true : false
+                };
+                await updateBuildStatusForSession(config.sessionId, lambdaCredentials, exitCode)
+            }
+        }catch(error){
+            console.error(error.message);
+        }
+
         if (
             !this.lambdatestTunnelProcess ||
             typeof this.lambdatestTunnelProcess.isRunning !== 'function' ||
